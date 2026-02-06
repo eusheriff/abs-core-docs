@@ -1,43 +1,27 @@
-# ABS: Agent Behavior System (V5.0)
-## The Sovereign Governance Infrastructure for Autonomous AI
+# ABS Core V6.5: The Sovereign Risk DAO
 
-> **"ABS V5.1: The first deterministic governance layer that qualifies AI Agents for Standard Cyber-Insurance Policies."**
+> **STATUS**: V6.5 GOLD (Software Kernel)
+> **HARDWARE**: Pending AWS Nitro Integration (See [Roadmap](roadmap/15_DAY_HARDENING_PLAN.md))
 
-ABS is a zero-trust, deterministic security kernel designed to wrap autonomous LLM agents. It transforms "Black Box" AI execution into an audit-ready, liability-shielded infrastructure.
+## 🚨 Transparency Notice (V6.5 vs V2.7)
+This repository represents the **V6.5 Sovereign Architecture**.
+*   **Logic**: Fully implemented in Rust/WASM (`clearing_house.rs`, `lib.rs`).
+*   **Enforcement**: Active via VSCode Extension and MCP Proxy.
+*   **Hardware**: Currently running in "Software Simulation Mode". True physical sovereignty requires the upcoming TEE implementation.
 
----
+Users looking for the legacy NodeJS-only middleware (V2.7) should check the `legacy-v2` branch.
 
-### 🛡️ The Liability Shield Protocol
-ABS acts as a hypervisor between your LLM and the Real World (Tools/APIs).
+## What is ABS?
+ABS is the **Immune System for AI Agents**. It creates a cryptographic and financial boundary around autonomous agents, ensuring they cannot execute high-risk actions without:
+1.  **Policy Approval** (Governance)
+2.  **Financial Bond** (Skin in the Game)
+3.  **Audit Logging** (Immutable History)
 
-1.  **Biology (Immunity)**: Detects prompt injections in one agent and vaccinates the entire fleet in <100ms.
-2.  **Physics (Hypervisor)**: Rust/WASM kernel enforces `code-as-law` policies that even the AI cannot override.
-3.  **Law (Non-Repudiation)**: High-risk actions (spending, keys) require **Biometric Human Signature** (WebAuthn).
+## Documentation
+*   [Executive Report](reports/EXECUTIVE_SOVEREIGNTY_REPORT_V6.5.md)
+*   [Technical Spec](specs/financial_clearing_house.md)
+*   [Hardening Plan](roadmap/15_DAY_HARDENING_PLAN.md)
 
-### 🚀 Key Features (V5.0 Gold)
-*   **Semantic Firewall**: Blocks "Ignore previous instructions" & Data Exfiltration patterns.
-*   **Distributed Ledger**: P2P Vaccine propagation gossip protocol.
-*   **KMA Dashboard**: CISO Command Center for identity revocation & approval.
-*   **Forensic Audit**: Immutable Hash-Chain logs (Ed25519 signed).
-
-### 📦 Installation & Demo
-```bash
-# 1. Install Dependencies
-pnpm install
-
-# 2. Run the KMA Dashboard
-pnpm run dashboard
-
-# 3. Simulate a Fleet Attack (Stress Test)
-./abs-cli stress-test --agents 1000
-```
-*(See `docs/protocol_immunity_stress_test.md` for full Scale Proof)*
-
-### 📂 Documentation Structure
-*   `config/abs-governance-core.yaml`: The Constitution (Master Policy).
-*   `docs/specs/`: Protocol Specifications (Intent Contract, Signatures).
-*   `packages/hypervisor-wasm/`: The Rust Core.
-
----
-**Status**: 🟢 M&A READY (Stable)
-**License**: Proprietary / Enterprise
+## Commercial
+Managed by OConnector.
+[Abscore.app](https://abscore.app)
