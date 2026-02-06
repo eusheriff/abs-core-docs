@@ -1,0 +1,192 @@
+id: ABS_INEVITABILITY_ROADMAP_L3_V1
+version: 1.0.0
+language: pt-BR
+owner: Rodrigo Gomes
+authority: ABS_INSTITUTIONAL_GATEKEEPER
+mode: ALL_OR_NOTHING
+fail_closed: true
+scope: ABS_ONLY
+purpose: >
+  Transformar o ABS de "governança legítima" em "governança inevitável":
+  criar enforcement obrigatório, reduzir fricção a zero, gerar externalidade negativa
+  para quem não usa, e cristalizar um selo de conformidade verificável.
+
+definitions:
+  inevitable: >
+    "ABS é inevitável quando a execução de ações sensíveis (tools/exec) é tecnicamente
+    impossível sem receipts válidos, e quando o ecossistema (clientes/parceiros/auditores)
+    exige evidência verificável."
+  sensitive_action:
+    - tool_call_high_risk
+    - action_call_with_side_effect
+    - credential_access
+    - code_execution
+    - money_movement
+    - data_exfiltration
+  evidence: "Artefatos + hashes + timestamps + provenance"
+
+non_negotiables:
+  - no_optional_enforcement: true
+  - no_waivers: true
+  - missing_evidence_means_block: true
+  - deterministic_decisions: true
+  - receipts_must_be_publicly_verifiable: true
+  - default_mode_must_add_value_in_30_seconds: true
+  - conformance_must_be_machine_verifiable: true
+
+targets:
+  primary_user:
+    - agent_builders
+    - security_conscious_teams
+    - companies_running_desktop_agents
+  primary_outcomes:
+    - "Sem ABS, ações sensíveis não executam."
+    - "Com ABS, auditoria e receipts são automáticos."
+    - "Conformance vira selo social e requisito comercial."
+
+gates:
+  - id: GATE_01_ENFORCEMENT_POINT
+    description: "Existir pelo menos 1 ponto de enforcement obrigatório."
+    pass_conditions:
+      - enforcement_point_exists: true
+      - bypass_probability: "near_zero"
+      - receipts_required_for_sensitive_actions: true
+    required_artifacts:
+      - enforcement_design_doc
+      - threat_model
+      - integration_contract_v1
+      - tests_enforcement_no_bypass
+
+  - id: GATE_02_DEFAULT_MODE_ZERO_FRICTION
+    description: "Usuário instala e vê valor em <= 30s sem ler docs."
+    pass_conditions:
+      - abs_init_available: true
+      - default_policy_auto_applied: true
+      - first_receipt_emitted_in_seconds: "<=30"
+      - actionable_output_shown: true
+    required_artifacts:
+      - cli_abs_init_spec
+      - default_policy_bundle
+      - onboarding_smoke_test
+
+  - id: GATE_03_EXTERNALITY_NEGATIVE
+    description: "Não usar ABS gera custo/risco imediato e visível."
+    pass_conditions:
+      - partners_can_require_receipts: true
+      - ci_gate_can_fail_without_receipts: true
+      - policy_bundle_can_enforce_org_rules: true
+    required_artifacts:
+      - ci_integration_guide
+      - receipt_requirement_spec
+      - example_repo_failing_without_abs
+
+  - id: GATE_04_CONFORMANCE_BADGE
+    description: "Suite de conformidade + badge verificável (anti-marketing)."
+    pass_conditions:
+      - conformance_suite_exists: true
+      - deterministic_vectors: true
+      - badge_is_cryptographically_backed: true
+      - public_verifier_available: true
+    required_artifacts:
+      - conformance_test_vectors
+      - badge_format_spec
+      - public_verify_cli_or_endpoint
+
+workstreams:
+  - id: WS_A_ENFORCEMENT
+    objective: "Bloquear execução de ações sensíveis sem receipt válido."
+    deliverables:
+      - abs_enforcement_proxy:
+          type: "local_daemon_or_mcp_proxy"
+          responsibilities:
+            - intercept_sensitive_calls
+            - demand_receipt
+            - verify_receipt_ed25519
+            - deny_on_failure
+      - policies:
+          - policy_sensitive_tool_allowlist
+          - policy_side_effect_classifier
+    success_metrics:
+      - "0 bypass in tests"
+      - "receipt required for 100% sensitive calls"
+
+  - id: WS_B_DEFAULT_MODE
+    objective: "Onboarding em 30s com valor visível."
+    deliverables:
+      - cli_command: "abs init"
+      - outputs:
+          - "abs_status.json"
+          - "abs_first_receipt.json"
+          - "abs_report.md"
+      - default_policy_bundle:
+          id: "ABS_DEFAULT_L1_SAFE_MODE"
+          behavior:
+            - allow_low_risk_readonly
+            - escalate_medium
+            - deny_high_risk_without_evidence
+    success_metrics:
+      - "TTFV <= 30s"
+      - "User sees at least 1 actionable finding"
+
+  - id: WS_C_EXTERNALITY
+    objective: "Criar custo de não uso via CI/partners."
+    deliverables:
+      - ci_action:
+          name: "abs-verify-receipts"
+          behavior:
+            - fail_if_missing_receipts
+            - fail_if_invalid_signatures
+            - fail_if_policy_bundle_not_pinned
+      - partner_contract:
+          requirement: "Receipts mandatory for integration"
+    success_metrics:
+      - "CI fails without ABS"
+      - "At least 1 partner integration requires receipts"
+
+  - id: WS_D_CONFORMANCE
+    objective: "Selo + conformance suite pública e verificável."
+    deliverables:
+      - conformance_runner
+      - signed_badge:
+          format: "badge.json + signature"
+          verifier: "abs verify-badge"
+    success_metrics:
+      - "Reproducible test vectors"
+      - "Badge verification succeeds offline"
+
+execution_order:
+  - step: 1
+    do: "WS_A_ENFORCEMENT"
+    rationale: "Sem enforcement, ABS é opcional."
+  - step: 2
+    do: "WS_B_DEFAULT_MODE"
+    rationale: "Sem onboarding brutal, não escala adoção."
+  - step: 3
+    do: "WS_C_EXTERNALITY"
+    rationale: "Sem custo de não uso, não vira padrão."
+  - step: 4
+    do: "WS_D_CONFORMANCE"
+    rationale: "Sem selo verificável, não vira requisito social."
+
+decision_output:
+  format: "yaml"
+  required_fields:
+    - decision
+    - passed_gates
+    - failed_gates
+    - blocking_reasons
+    - next_actions
+  decision_enum: [APPROVE_INEVITABILITY_PHASE, BLOCK, PAUSE]
+
+next_actions_template:
+  - "Implementar enforcement proxy (daemon/MCP) e testes anti-bypass"
+  - "Criar abs init + default policy bundle + smoke test 30s"
+  - "Publicar CI action que falha sem receipts"
+  - "Definir badge + conformance suite + verifier offline"
+
+acceptance_criteria:
+  must_be_true:
+    - "Sensitive actions cannot execute without receipts."
+    - "User obtains value within 30 seconds of install."
+    - "CI/partners can require receipts (externality)."
+    - "Conformance badge is cryptographically verifiable."

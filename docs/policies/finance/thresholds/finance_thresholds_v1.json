@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ABS Finance Thresholds v1",
+  "version": "1.0.0",
+  "thresholds_id": "finance_thresholds_v1",
+  "description": "DEFAULT PROVISÓRIO - Calibrar via backtest com dados históricos",
+  "VOLATILITY": {
+    "ATR_MULT_R1": 2.0,
+    "ATR_MULT_R2": 4.0,
+    "ATR_MULT_R3": 8.0,
+    "note": "Multiplicador do ATR baseline (média 30d)"
+  },
+  "SPREAD_BPS": {
+    "R1": 10,
+    "R2": 30,
+    "R3": 100,
+    "note": "1 bps = 0.01%"
+  },
+  "LATENCY_MS": {
+    "R1": 200,
+    "R2": 500,
+    "R3": 2000,
+    "note": "WebSocket RTT em milissegundos"
+  },
+  "DRAWDOWN_DAILY_PCT": {
+    "R1": 0.03,
+    "R2": 0.05,
+    "R3": 0.08,
+    "note": "Decimal (0.05 = 5%)"
+  },
+  "DRAWDOWN_WEEKLY_PCT": {
+    "R1": 0.07,
+    "R2": 0.10,
+    "R3": 0.12,
+    "note": "Decimal"
+  },
+  "CONSECUTIVE_LOSSES": {
+    "R1": 4,
+    "R2": 6,
+    "R3": 8,
+    "note": "Número de trades perdedores consecutivos"
+  },
+  "TTL_MS": {
+    "MARKET_TICK": 3000,
+    "OHLCV_BAR": 5000,
+    "ORDERBOOK_TOP": 2000,
+    "SPREAD_SNAPSHOT": 5000,
+    "LATENCY_SNAPSHOT": 10000,
+    "API_HEALTH": 30000,
+    "RATE_LIMIT_EVENT": 60000,
+    "NEWS_EVENT": 300000,
+    "POSITION_SNAPSHOT": 15000,
+    "PNL_SNAPSHOT": 15000,
+    "note": "TTL padrão em ms por tipo de evidência"
+  },
+  "CONSTRAINTS": {
+    "R0": { "max_position_pct": 10, "max_leverage": 5, "require_confirmation": false },
+    "R1": { "max_position_pct": 5, "max_leverage": 3, "require_confirmation": false },
+    "R2": { "max_position_pct": 2, "max_leverage": 2, "require_confirmation": true },
+    "R3": { "max_position_pct": 0, "max_leverage": 1, "only_exits": true, "entries_allowed": false }
+  }
+}

@@ -1,0 +1,175 @@
+id: ABS_KERNEL_L3_POLICY_ENGINE_V1_1
+version: 1.1.0
+language: pt-BR
+owner: Rodrigo Gomes
+authority: ABS_INSTITUTIONAL_GATEKEEPER
+mode: ALL_OR_NOTHING
+fail_closed: true
+lock_mode_required: CODE_FREEZE
+purpose: >
+  Operar o ABS como Kernel de Governança universal para agentes LLM:
+  interceptar intents, validar evidências, aplicar bundles de políticas versionados,
+  emitir receipts verificáveis e controlar transições de estado (state machine) sem waivers.
+
+non_negotiables:
+  - missing_evidence_means_block: true
+  - no_waivers: true
+  - deterministic_decisions: true
+  - all_decisions_emit_receipt: true
+  - receipts_must_be_verifiable: true
+  - policy_is_data_not_code: true
+  - auditability_over_convenience: true
+
+inputs:
+  channels:
+    - name: intent_inbox
+      accepted_intent_types:
+        - TOOL_CALL
+        - ACTION_CALL
+        - TRADE_SCRIPT
+        - PROMOTION_REQUEST
+        - POLICY_CHANGE_REQUEST
+      description: >
+        Intents vindos de agentes (ex: Clawdbot, Manú, OTrader).
+        O ABS não assume boa fé; valida assinatura, replay e schema.
+
+    - name: evidence_store
+      description: >
+        Artefatos de evidência (paths + sha256 + timestamps). Sem evidência = BLOCK.
+
+    - name: system_state
+      description: >
+        Estado do ambiente (freeze, runtime, sidecar health, latch state, etc).
+
+  required_fields:
+    - request_id
+    - timestamp_utc
+    - actor_id
+    - intent_type
+    - intent_payload
+    - canonical_intent_hash
+    - auth_signature
+    - policy_bundle_id
+    - evidence_manifest
+
+identity_and_crypto:
+  canonicalization:
+    rule: "Canonical JSON (sem floats, keys ordenadas recursivamente)."
+    forbid_floats: true
+
+  anti_replay:
+    required: true
+    ttl_seconds: 120
+    idempotency_key_required: true
+
+  auth_signing: # autenticidade e anti-replay (interno)
+    algorithm: HMAC-SHA256
+    secret_key_env: ABS_SECRET_KEY
+
+  receipt_signing: # verificabilidade / non-repudiation (externo)
+    algorithm: Ed25519
+    private_key_env: ABS_ED25519_PRIVATE_KEY
+    public_key_id: ABS_ED25519_KEY_ID
+
+state_machine:
+  states: [RUNNING, ELEVATED_RISK, PAUSED, KILLED]
+  persistence:
+    state_file: audit/abs_state.json
+    append_only_log: audit/abs_state_log.jsonl
+  invariants:
+    - KILLED_is_terminal_without_manual_reset: true
+    - any_error_defaults_to_PAUSED_or_BLOCK: true
+
+policy_bundles:
+  ruleset_loading:
+    source: repo_versioned_file
+    directory: docs/policies/
+    must_include: [policy.yaml, schema.yaml, tests.yaml]
+  selection:
+    by_id: true
+    deny_if_missing: true
+  engine_version_pin:
+    required: true
+    deny_if_mismatch: true
+
+decision_procedure:
+  - step: verify_lock_mode
+    action: "Confirmar CODE_FREEZE ativo e ambiente estável. Se não, DENIED (HARD_BLOCK)."
+  - step: verify_signature_and_anti_replay
+    action: "Validar HMAC, TTL e idempotência. Se falhar, DENIED (CRITICAL)."
+  - step: load_policy_bundle
+    action: "Carregar bundle por ID/versão e validar compatibilidade com engine_version_pin."
+  - step: validate_evidence_manifest
+    action: "Validar presença+sha256+janela temporal. Se faltar, DENIED (HARD_BLOCK)."
+  - step: evaluate_gates_in_order
+    action: "Avaliar gates definidos no bundle (ordem do bundle). Falha => DENIED."
+  - step: update_state_machine
+    action: "Atualizar estado conforme severidade e tipo de falha."
+  - step: emit_receipt
+    action: "Emitir receipt (payload_hash determinístico + assinatura Ed25519)."
+  - step: return_decision
+    action: "Retornar decision + receipt_id + reason_codes (sem segredos)."
+
+receipt_schema:
+  version: 2
+  required_fields:
+    - receipt_id
+    - request_id
+    - timestamp_utc
+    - actor_id
+    - intent_type
+    - canonical_intent_hash
+    - policy_bundle_id
+    - decision
+    - severity
+    - reasons
+    - evidence_pointers
+    - state_before
+    - state_after
+    - receipt_payload_hash
+    - receipt_signature
+    - public_key_id
+  decision_enum: [APPROVED, DENIED, PAUSED, KILLED]
+  severity_enum: [INFO, WARN, HARD_BLOCK, CRITICAL]
+  determinism:
+    rule: >
+      receipt_payload_hash é determinístico: hash de um envelope canonicalizado
+      EXCLUINDO receipt_id e timestamp_utc.
+      receipt_signature autentica o receipt completo (inclui timestamp).
+
+output_format_rules:
+  - always_return: [decision, receipt_id, reasons]
+  - never_return: [ABS_SECRET_KEY, raw_env, exchange_keys]
+  - receipts_are_append_only: true
+
+domains:
+  # bundles específicos por domínio; kernel permanece genérico
+  - domain: FINANCE_AUTOMATION
+    target_state: MICRO_REAL_TEST
+    deny_conditions:
+      - no_source_citations
+      - no_risk_limits
+      - missing_entry_exit_definition
+      - missing_invalidations
+    required_intent_payload_fields_for_trade_script:
+      - market
+      - instrument
+      - timeframe
+      - thesis
+      - entry
+      - exit
+      - invalidation
+      - position_sizing_plan
+      - max_loss
+      - evidence_links_or_ids
+
+tests_contract:
+  must_have:
+    - test_fail_closed_on_missing_evidence
+    - test_reject_on_invalid_hmac
+    - test_reject_on_expired_ttl
+    - test_idempotency_no_double_execute
+    - test_state_machine_transitions
+    - test_receipt_schema_compliance
+    - test_policy_bundle_version_pin
+    - test_receipt_non_repudiation_ed25519

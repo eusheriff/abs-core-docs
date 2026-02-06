@@ -1,0 +1,10 @@
+id: TEST_BUNDLE
+version: 1.0.0
+description: "Test Bundle for Enforcement Proxy"
+gates:
+  - id: GATE_ALWAYS_PASS
+    description: "Always passes"
+    pass_conditions: []
+    checks: []
+thresholds: {}
+evidence_requirements: {}

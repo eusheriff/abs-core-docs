@@ -1,0 +1,173 @@
+abs_protocol:
+  version: 4.2
+  codename: cognitive_notary
+  objective: >
+    Transformar o ABS em uma Autoridade Cognitiva Distribuída (Cognitive PKI),
+    permitindo confiança verificável offline entre agentes autônomos.
+
+core_principles:
+  - llm_is_not_authority
+  - memory_is_not_permission
+  - deterministic_policy_first
+  - cryptographic_non_repudiation
+  - fail_safe_over_fail_open
+
+security_invariants:
+  INV-001: execution_requires_signed_attestation
+  INV-002: credentials_never_touch_llm
+  INV-003: policy_engine_is_deterministic
+  INV-004: memory_has_zero_execution_authority
+
+attestation:
+  type: CAT_v2.1
+  crypto: ed25519
+
+  bindings:
+    identity: agent_public_key
+    intent: canonical_payload_hash
+    context:
+      memory_digest: sha256
+      reputation_score: int
+    audience: target_service_id
+    anti_replay:
+      nonce: uuid_v4
+      issued_at: unix_ts
+      ttl_seconds: 60
+
+  signed_fields:
+    - agent_id
+    - payload_hash
+    - policy_hash
+    - memory_digest
+    - reputation_score
+    - audience
+    - nonce
+    - issued_at
+
+runtime_flow:
+  - agent_requests_action
+  - abs_interceptor_receives
+  - policy_engine_evaluates
+  - neuro_engine_scores_risk
+  - if_allow:
+      - generate_CAT
+      - attach_attestation
+      - forward_execution
+  - if_deny:
+      - block
+      - emit_signed_audit_event
+
+agent_handshake_v0:
+  description: Mutual Cognitive Attestation between ABS instances
+
+  flow:
+    step_1:
+      agent_A:
+        sends:
+          - CAT_token
+          - public_key
+
+    step_2:
+      agent_B:
+        verifies:
+          - signature
+          - audience
+          - memory_digest
+          - reputation_score
+        responds_with:
+          - reciprocal_CAT
+          - public_key
+
+    step_3:
+      mutual_trust_established: true
+
+  result:
+    - shared_trust_context
+    - federated_reputation_ready
+    - cross_agent_execution_enabled
+
+threat_model:
+  covered:
+    - prompt_injection
+    - agent_spoofing
+    - replay_attacks
+    - memory_poisoning
+    - credential_exfiltration
+    - policy_bypass
+
+  mitigations:
+    replay:
+      - nonce
+      - ttl
+      - audience_binding
+    spoofing:
+      - ed25519_identity
+    drift:
+      - adaptive_reputation_penalty
+    memory_attack:
+      - digest_binding
+    execution:
+      - signed_allow_only
+
+compliance_artifacts:
+  enabled: false
+  phase_5_target: true
+
+  outputs:
+    - session_proof_json
+    - signed_decision_chain
+    - certificate_of_policy_enforcement
+
+agent_framework_coverage:
+  langchain:
+    provides: orchestration
+    lacks:
+      - cryptographic_attestation
+      - offline_verification
+      - agent_identity
+
+  crewai:
+    provides: coordination
+    lacks:
+      - non_repudiation
+      - trust_mesh
+
+  autogen:
+    provides: messaging
+    lacks:
+      - governance_kernel
+      - policy_signing
+
+abs_positioning:
+  category: cognitive_pki
+  replaces:
+    - manual_guardrails
+    - passive_logs
+  enables:
+    - trusted_agents
+    - b2b_agent_mesh
+    - ai_insurance
+
+roadmap:
+  phase_4_2:
+    - implement_agent_handshake
+    - public_key_exchange
+    - reciprocal_CAT
+
+  phase_5:
+    - federation_layer
+    - reputation_graph
+    - compliance_exporter
+    - @abs/verifier
+
+success_metrics:
+  technical:
+    - zero_unsigned_execution
+    - offline_verification_working
+  business:
+    - enterprise_agent_adoption
+    - ai_compliance_use_cases
+
+final_thesis: >
+  ABS evolui de firewall para Cognitive Trust Substrate,
+  atuando como PKI da economia de agentes.

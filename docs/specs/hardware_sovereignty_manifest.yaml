@@ -1,0 +1,25 @@
+# ======================================================
+# ABS V6.0: HARDWARE SOVEREIGNTY MANIFEST
+# Security Mode: ENCLAVE_STRICT
+# ======================================================
+
+hardware_enclave:
+  type: "Intel-SGX-LVI-Protected"
+  memory_encryption: true
+  attestation_endpoint: "https://verify.abs-security.io"
+  isolation_level: "KERNEL_RING_MINUS_1"
+
+identity_authority:
+  issuer: "ABS-Global-Root-CA"
+  protocol: "DID-Identity-Sovereign"
+  enforcement: "MANDATORY_PASSPORT_CHECK" # Rejeita agentes sem DID assinado
+
+autonomous_policing:
+  reputation_weight: 0.8 # Peso do score global na decisão de execução
+  speculative_kill: true # Ativa o "Minority Report" (Token-Level Sniffing)
+  auto_revoke_on_breach: true # Revoga o DID do agente se ele tentar bypassar o TEE
+
+governance_root:
+  # O próximo passo para descentralização
+  structure: "DAO_MULTISIG"
+  min_quorum: 5
