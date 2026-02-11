@@ -1,5 +1,8 @@
 # ABS Core Documentation
 
+
+![ABS Core Landing](/images/landing.png)
+
 Documentation for [ABS Core](https://abscore.app), the Agent Behavior System kernel.
 
 ## Overview
