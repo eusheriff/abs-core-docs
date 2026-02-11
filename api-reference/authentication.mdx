@@ -1,0 +1,122 @@
+---
+title: Authentication
+description: 'API authentication and token management'
+---
+
+# Authentication
+
+ABS Core uses Personal Access Tokens (PATs) for API authentication. Tokens are scoped by role.
+
+## Getting a Token
+
+### Via GitHub OAuth (Recommended)
+
+```
+GET https://auth-worker.dev-oconnector.workers.dev/auth/github
+```
+
+This redirects to GitHub for authorization. After successful auth, you'll be redirected to the dashboard with an active session.
+
+### Via Email/Password
+
+```bash
+curl -X POST https://auth-worker.dev-oconnector.workers.dev/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@company.com",
+    "password": "your_password",
+    "turnstile": "captcha_token"
+  }'
+```
+
+Response:
+```json
+{
+  "token": "session-uuid",
+  "user": { "email": "admin@company.com", "role": "admin" }
+}
+```
+
+## Generating a PAT
+
+```bash
+curl -X POST https://auth-worker.dev-oconnector.workers.dev/token \
+  -H "Authorization: Bearer SESSION_TOKEN"
+```
+
+Response:
+```json
+{
+  "accessToken": "abs_pat_abc123...",
+  "scope": "runtime:read runtime:write admin:manage",
+  "setup_cmd": "export ABS_TOKEN=abs_pat_abc123..."
+}
+```
+
+## Using Tokens
+
+Include your PAT in every API request:
+
+```bash
+curl -H "Authorization: Bearer abs_pat_your_token" \
+  https://api.abscore.app/v1/events
+```
+
+## Token Scopes
+
+| Role | Scope | Permissions |
+|------|-------|-------------|
+| `admin` | `runtime:read runtime:write admin:manage` | Full access + user management |
+| `operator` | `runtime:read runtime:write` | Send events, use proxy |
+| `viewer` | `runtime:read` | Read-only dashboard access |
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/auth/github` | Start GitHub OAuth flow |
+| `GET` | `/auth/github/callback` | OAuth callback (internal) |
+| `POST` | `/login` | Email/password login |
+| `POST` | `/token` | Generate PAT |
+| `GET` | `/verify` | Verify token validity |
+| `GET` | `/me` | Get current user profile |
+| `POST` | `/logout` | End session |
+| `GET` | `/health` | Service health check |
+
+## Verify Token
+
+```bash
+curl https://auth-worker.dev-oconnector.workers.dev/verify \
+  -H "Authorization: Bearer abs_pat_your_token"
+```
+
+Response:
+```json
+{
+  "active": true,
+  "type": "pat",
+  "userId": "gh_12345",
+  "email": "dev@company.com",
+  "role": "operator",
+  "scope": "runtime:read runtime:write"
+}
+```
+
+## Current User
+
+```bash
+curl https://auth-worker.dev-oconnector.workers.dev/me \
+  -H "Authorization: Bearer SESSION_TOKEN"
+```
+
+Response:
+```json
+{
+  "id": "gh_12345",
+  "email": "dev@company.com",
+  "name": "Rodrigo Gomes",
+  "avatar": "https://avatars.githubusercontent.com/u/12345",
+  "role": "admin",
+  "provider": "github"
+}
+```

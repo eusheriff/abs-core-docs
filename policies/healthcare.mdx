@@ -1,0 +1,26 @@
+---
+title: Healthcare Policy (HIPAA)
+description: "PHI Protection & Compliance"
+---
+
+# Healthcare Policy
+
+The **Healthcare Policy Pack** (`healthcare.yml`) ensures compliance with HIPAA and GDPR standards when agents handle Protected Health Information (PHI).
+
+## Rules
+
+| ID          | Rule Name            | Description                                  | Action       |
+| ----------- | -------------------- | -------------------------------------------- | ------------ |
+| **MED-001** | `phi-detection`      | Detect SSN, Medical Record IDs               | **DENY**     |
+| **MED-002** | `diagnosis-leak`     | Prevent outputting diagnosis without consent | **ESCALATE** |
+| **MED-003** | `prescription-check` | Validate drug names against safe list        | **ALLOW**    |
+| **MED-004** | `emergency-override` | Allow specific actions if "LIFE_THREATENING" | **ALLOW**    |
+| **MED-005** | `data-exfiltration`  | Block bulk export of patient data            | **DENY**     |
+
+## Usage
+
+Enable for agents handling medical data:
+
+```bash
+export ABS_POLICY_PACK=healthcare
+```

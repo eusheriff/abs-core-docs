@@ -1,0 +1,45 @@
+---
+title: Financial Policy
+description: "Fraud & Risk Control for Fintech Agents"
+---
+
+# Financial Policy
+
+The **Financial Policy Pack** (`financial.yml`) is designed for high-risk fintech environments where agents interact with payment gateways, ledgers, or banking APIs.
+
+## Rules
+
+| ID          | Rule Name           | Description                                    | Action       |
+| ----------- | ------------------- | ---------------------------------------------- | ------------ |
+| **FIN-001** | `amount-limit-hard` | Block transactions > $50,000                   | **DENY**     |
+| **FIN-002** | `amount-limit-soft` | Flag transactions > $10,000 for review         | **ESCALATE** |
+| **FIN-003** | `velocity-check`    | > 5 transactions/min from same agent           | **DENY**     |
+| **FIN-004** | `offshore-transfer` | Detect international IBANs/SWIFT codes         | **ESCALATE** |
+| **FIN-005** | `crypto-address`    | Block transfer to known crypto wallet patterns | **DENY**     |
+| **FIN-006** | `insider-trading`   | Detect keywords related to non-public info     | **ESCALATE** |
+| **FIN-007** | `auth-bypass`       | Detect attempts to modify auth headers         | **DENY**     |
+
+## Usage
+
+In your `abs-config.json` or `.env`:
+
+```json
+{
+  "policies": {
+    "financial": "enabled"
+  }
+}
+```
+
+## JSON Schema
+
+The policy enforces the following schema on `financial.transfer` events:
+
+```json
+{
+  "amount": "number",
+  "currency": "string",
+  "recipient": "string",
+  "reason": "string"
+}
+```

@@ -1,0 +1,30 @@
+---
+title: Core Concepts
+description: "Understanding the ABS Governance Model"
+---
+
+# Core Concepts
+
+## The Governance Loop
+
+ABS operates on a continuous loop of **Monitor**, **Evaluate**, and **Act**.
+
+1.  **Monitor**: Capture events from agents (Prompts, Tool Calls, API Requests).
+2.  **Evaluate**: Run events through the Policy Engine and Trust Layer.
+3.  **Act**: Enforce the decision (Allow, Block, Redact, Escalate).
+
+## Trust Hierarchy
+
+Policies are applied in layers:
+
+1.  **Kernel Layer** (Highest): Immutable invariants (e.g., "Never expose private keys").
+2.  **Profile Layer**: Domain-specific rules (e.g., "Financial", "Healthcare").
+3.  **Workspace Layer**: Team specific rules (e.g., "Dev Environment allow-list").
+
+## The Envelope Protocol
+
+All decisions are wrapped in a **Decision Envelope** (ADR-008). This ensures that every Allow/Block decision is:
+
+- **Cryptographically Signed**: Cannot be forged.
+- **Traceable**: Linked to a specific Event ID and Trace ID.
+- **Auditable**: Stored in the immutable Write-Ahead Log.

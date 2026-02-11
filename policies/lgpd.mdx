@@ -1,0 +1,23 @@
+---
+title: LGPD Policy
+description: "Data Protection for Brazil"
+---
+
+# LGPD Policy
+
+The **LGPD Policy Pack** (`lgpd.yml`) is tailored for Brazilian data protection laws.
+
+## Rules
+
+| ID         | Rule Name            | Description                            | Action       |
+| ---------- | -------------------- | -------------------------------------- | ------------ |
+| **BR-001** | `cpf-format`         | Detect CPF patterns (XXX.XXX.XXX-XX)   | **REDACT**   |
+| **BR-002** | `cnpj-format`        | Detect CNPJ patterns                   | **ALLOW**    |
+| **BR-003** | `rg-format`          | Detect RG patterns                     | **REDACT**   |
+| **BR-004** | `sensitive-personal` | Race, religion, political opinion data | **ESCALATE** |
+| **BR-005** | `minor-data`         | Strict block on data of minors (< 18)  | **DENY**     |
+| **BR-006** | `cross-border`       | Data transfer outside Brazil           | **ESCALATE** |
+
+## Implementation
+
+This policy primarily uses the `Redact` action to sanitize inputs/outputs rather than blocking them entirely, allowing business continuity while maintaining compliance.

@@ -1,0 +1,55 @@
+---
+title: Events API
+description: "/v1/events"
+---
+
+# Events API
+
+The Events API is the ingestion point for the ABS Kernel.
+
+## Ingest Event
+
+`POST /v1/events/ingest`
+
+Submit a raw event for processing and logging.
+
+### Request
+
+```json
+{
+  "event_type": "llm.completion",
+  "payload": {
+    "prompt": "SELECT * FROM users",
+    "model": "gpt-4o"
+  },
+  "metadata": {
+    "agent_id": "sql-bot",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "id": "evt_12345",
+  "verdict": "ALLOW",
+  "risk_score": 10
+}
+```
+
+## Batch Ingest
+
+`POST /v1/events/ingest/batch`
+
+Submit multiple events at once (max 100).
+
+```json
+{
+  "events": [
+    { ... },
+    { ... }
+  ]
+}
+```

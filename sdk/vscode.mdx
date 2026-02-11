@@ -1,0 +1,38 @@
+---
+title: VS Code Extension
+description: "IDE Integration & Scanner"
+---
+
+# VS Code Extension
+
+The **ABS Kernel Extension** for VS Code brings governance directly into your editor. It acts as a local scanner and a gateway to the ABS Cloud.
+
+**Marketplace**: `oconnector.abs-vscode`
+
+## Features
+
+1.  **Local Scan**: Scans your current file or project for policy violations (secrets, PII, dangerous patterns) entirely offline.
+2.  **Remote Policy Check**: Connects to your ABS Cloud instance to validate code against enterprise policies.
+3.  **Governance Sidebar**: View risk scores, recent events, and active policies.
+
+## Installation
+
+1.  Open VS Code Extensions (`Ctrl+Shift+X`).
+2.  Search for `ABS Kernel`.
+3.  Install the extension by OConnector.
+
+## Configuration
+
+In `.vscode/settings.json`:
+
+```json
+{
+  "abs.apiUrl": "https://api.abscore.app",
+  "abs.apiKey": "sk-..."
+}
+```
+
+## Usage
+
+- **Scan File**: Open Command Palette (`Ctrl+Shift+P`) -> `ABS: Scan Current File`.
+- **Sidebar**: Click the Shield icon in the activity bar to see project health.

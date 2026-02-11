@@ -1,0 +1,61 @@
+---
+title: Introduction
+description: 'AI Agent Governance — Protect, Monitor, Control'
+---
+
+# ABS Core
+
+**ABS Core** is a real-time governance engine for AI agents. It monitors every action an AI agent takes, enforces security policies, and produces an immutable audit trail.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get protected in 5 minutes
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/authentication">
+    Full API documentation
+  </Card>
+  <Card title="Policy Engine" icon="shield-check" href="/features/policy-engine">
+    Write custom security policies
+  </Card>
+  <Card title="SDK" icon="puzzle-piece" href="/sdk/sentinel">
+    Integrate with any agent framework
+  </Card>
+</CardGroup>
+
+## Why ABS Core?
+
+AI agents are increasingly autonomous — writing code, making API calls, accessing databases. **Without governance, every agent is a liability.**
+
+| Problem | ABS Solution |
+|---------|-------------|
+| Agent sends PII to external API | **Policy Engine** blocks in <5ms |
+| Agent credentials leaked in logs | **Secret Vault** injects at runtime (JIT) |
+| Agent stops responding | **Heartbeat Sentinel** detects in 5 minutes |
+| Compliance audit required | **Immutable Ledger** with hash chain |
+| New attack vector discovered | **CHI** classifies intent semantically |
+
+## Architecture
+
+```
+Agent (Cursor, Copilot, etc.)
+  │
+  ▼
+┌─────────────────────────────────┐
+│         ABS Shield (Proxy)      │
+│  ┌──────────┐  ┌─────────────┐  │
+│  │ Secret   │  │ Rate        │  │
+│  │ Vault    │  │ Limiter     │  │
+│  └──────────┘  └─────────────┘  │
+│  ┌──────────┐  ┌─────────────┐  │
+│  │ Policy   │  │ CHI         │  │
+│  │ Engine   │  │ (Semantic)  │  │
+│  └──────────┘  └─────────────┘  │
+│  ┌──────────┐  ┌─────────────┐  │
+│  │ Heartbeat│  │ Audit       │  │
+│  │ Sentinel │  │ Ledger      │  │
+│  └──────────┘  └─────────────┘  │
+└─────────────────────────────────┘
+  │
+  ▼
+LLM Provider (OpenAI, Gemini, Anthropic)
+```

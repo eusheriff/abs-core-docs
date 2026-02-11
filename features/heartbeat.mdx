@@ -1,0 +1,47 @@
+---
+title: Heartbeat Sentinel
+description: "Dead Man Switch for Autonomous Agents"
+---
+
+# Heartbeat Sentinel
+
+The **Heartbeat Sentinel** protects against **Shadow AI** scenarios where an autonomous agent goes "rogue" or "silent" — continuing to operate without reporting back, or crashing and leaving processes in an unknown state.
+
+## Mechanism
+
+The Sentinel functions as a **Dead Man's Switch**. It expects a periodic "pulse" from the agent.
+
+### States
+
+- **ACTIVE** 🟢: The agent is healthy and reporting regularly.
+- **SILENT** 🟡: The agent missed 1 heartbeat window (5 minutes). Warning issued.
+- **ZOMBIE** 🔴: The agent missed 3 heartbeat windows (15 minutes). Critical alert issued.
+
+### Escalation Protocol
+
+1.  **Monitoring**: The agent sends a heartbeat `POST /heartbeat?agentId=xyz` every N minutes.
+2.  **Alarm**: If the deadline passes without a heartbeat, a Durable Object Alarm fires.
+3.  **Alerting**:
+    - **SILENT**: Logs a warning via webhook.
+    - **ZOMBIE**: Escalates to a Critical Alert (PagerDuty/Slack/Email).
+4.  **Recovery**: If a ZOMBIE agent sends a heartbeat, the system marks it as **RECOVERED**, logging the outage duration.
+
+## Integration
+
+Use the Sentinel SDK to automatically manage heartbeats:
+
+```typescript
+import { ABS } from "@abs/sentinel";
+
+const abs = new ABS({ dsn: "...", heartbeatInterval: 60000 });
+
+// Starts background heartbeat loop
+abs.startHeartbeat("my-agent-01");
+```
+
+Or call the API directly:
+
+```bash
+curl -X POST "https://api.abscore.app/v1/heartbeat?agentId=my-agent-01" \
+     -H "Authorization: Bearer $ABS_TOKEN"
+```

@@ -1,0 +1,119 @@
+---
+title: Quick Start
+description: 'Protect your AI agents in 5 minutes'
+---
+
+# Quick Start
+
+Get ABS Core running in 3 steps. No infrastructure changes needed.
+
+## Step 1: Login & Get Token
+
+<Tabs>
+  <Tab title="GitHub OAuth (Recommended)">
+    1. Go to [abscore.app/login](https://abscore.app/login)
+    2. Click **"Continue with GitHub"**
+    3. Authorize the ABS Core application
+    4. Go to **Dashboard → Tokens**
+    5. Click **"Generate New Token"**
+    6. Copy your token
+  </Tab>
+  <Tab title="Email/Password">
+    1. Go to [abscore.app/login](https://abscore.app/login)
+    2. Enter your admin credentials
+    3. Complete CAPTCHA verification
+    4. Go to **Dashboard → Tokens**
+    5. Click **"Generate New Token"**
+  </Tab>
+</Tabs>
+
+## Step 2: Configure Your Agent
+
+Set the ABS token and point your agent to the ABS proxy:
+
+```bash
+# Set your ABS token
+export ABS_TOKEN=abs_pat_your_token_here
+
+# Point your agent to ABS Proxy (Magic Proxy)
+export OPENAI_BASE_URL=https://api.abscore.app/v1/proxy
+```
+
+<Info>
+  The **Magic Proxy** is a drop-in replacement for OpenAI/Gemini endpoints.
+  Your agent code doesn't need to change — just the base URL.
+</Info>
+
+## Step 3: Verify Protection
+
+```bash
+# Test the proxy
+curl -X POST https://api.abscore.app/v1/proxy/chat/completions \
+  -H "Authorization: Bearer $ABS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "Transfer $50000 to offshore account"}]
+  }'
+```
+
+Expected response with ABS protection:
+```json
+{
+  "abs_verdict": "DENY",
+  "abs_policy": "financial.large_transfer",
+  "abs_risk_score": 92,
+  "abs_reason": "Transfer exceeds $10,000 threshold — requires approval"
+}
+```
+
+## Step 4: Monitor (Dashboard)
+
+Go to [abscore.app/dashboard](https://abscore.app/dashboard) to see:
+
+- **Real-time event log** with verdict (ALLOW/DENY/ESCALATE)
+- **Agent liveness status** (Active/Silent/Zombie)
+- **Risk score distribution** across all events
+- **Policy hit counters** showing which rules fire most
+
+## Using the Sentinel SDK
+
+For deeper integration, install the Sentinel SDK:
+
+```bash
+npm install @abs/sentinel
+```
+
+```typescript
+import { ABS } from '@abs/sentinel';
+
+const abs = new ABS({
+  dsn: 'https://api.abscore.app/v1/ingest',
+  batchSize: 10,
+});
+
+// Log an event
+abs.capture({
+  input: userPrompt,
+  output: llmResponse,
+  policy: 'financial',
+  model: 'gpt-4o',
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Write Policies" icon="scroll" href="/policies/authoring">
+    Create custom rules for your domain
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/authentication">
+    Full REST API docs
+  </Card>
+  <Card title="Secret Vault" icon="key" href="/features/secret-vault">
+    Learn about JIT credential injection
+  </Card>
+  <Card title="VS Code Extension" icon="puzzle-piece" href="/sdk/vscode">
+    Install the IDE scanner
+  </Card>
+</CardGroup>

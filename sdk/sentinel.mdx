@@ -1,0 +1,77 @@
+---
+title: Sentinel SDK
+description: "Node.js/TypeScript Integration"
+---
+
+# Sentinel SDK
+
+The **ABS Sentinel SDK** (`@abs/sentinel`) is the primary way to integrate your AI agents with the ABS Kernel. It handles event logging, policy checkpoints, and heartbeat monitoring.
+
+## Installation
+
+```bash
+npm install @abs/sentinel
+```
+
+## Usage
+
+### 1. Initialization
+
+```typescript
+import { ABS } from "@abs/sentinel";
+
+const abs = new ABS({
+  dsn: "https://api.abscore.app", // Or your self-hosted instance
+  apiKey: process.env.ABS_TOKEN,
+  mode: "runtime", // 'runtime' (active blocking) or 'scanner' (passive logging)
+});
+```
+
+### 2. Logging Events
+
+Log LLM inputs and outputs to create an audit trail.
+
+```typescript
+await abs.log({
+  input: "Transfer $500 to Alice",
+  output: "Transferring...",
+  model: "gpt-4o",
+  agent_id: "agent-007",
+  risk_level: "medium",
+});
+```
+
+### 3. Policy Checkpoint (Blocking)
+
+Before executing an action, check if it's allowed.
+
+```typescript
+const verdict = await abs.check({
+  intent: "database_write",
+  payload: { table: "users", action: "delete" },
+});
+
+if (verdict.allowed) {
+  // Execute action
+} else {
+  console.error("Blocked by ABS:", verdict.reason);
+}
+```
+
+### 4. Heartbeat
+
+Start a background heartbeat to prevent "Shadow AI".
+
+```typescript
+abs.startHeartbeat("agent-007");
+```
+
+## Configuration Options
+
+| Option            | Type   | Default     | Description                                               |
+| ----------------- | ------ | ----------- | --------------------------------------------------------- |
+| `dsn`             | string | -           | URL of the ABS API                                        |
+| `apiKey`          | string | -           | Your ABS Project Token                                    |
+| `mode`            | string | `'scanner'` | `'runtime'` for enforcement, `'scanner'` for logging only |
+| `batchSize`       | number | `10`        | Number of events to buffer before sending                 |
+| `flushIntervalMs` | number | `5000`      | Max time to wait before sending buffer                    |

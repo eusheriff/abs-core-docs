@@ -1,0 +1,41 @@
+---
+title: Agents API
+description: "/v1/agents"
+---
+
+# Agents API
+
+Manage registered agents and their statuses.
+
+## Register Agent
+
+`POST /v1/agents/register`
+
+```json
+{
+  "agent_id": "customer-support-bot",
+  "name": "Customer Support",
+  "policy_pack": "financial"
+}
+```
+
+## Heartbeat
+
+`POST /v1/heartbeat`
+
+See [Heartbeat Sentinel](/features/heartbeat) for details.
+
+## Get Agent Status
+
+`GET /v1/agents/{agent_id}`
+
+### Response
+
+```json
+{
+  "agent_id": "customer-support-bot",
+  "status": "ACTIVE",
+  "last_seen": "2024-01-01T12:05:00Z",
+  "risk_score": 5
+}
+```

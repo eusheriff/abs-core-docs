@@ -1,0 +1,144 @@
+---
+title: Policy Authoring Guide
+description: 'Write custom security policies for your AI agents'
+---
+
+# Writing Policies
+
+ABS Core uses YAML-defined policy contracts to govern agent behavior. Each policy defines a pattern to match, an action to take, and metadata for auditing.
+
+## Policy Structure
+
+```yaml
+version: "1.0"
+domain: "your_domain"
+description: "What this policy pack covers"
+
+policies:
+  - name: rule_name
+    pattern: 'regex_pattern'
+    action: DENY | ESCALATE | LOG
+    severity: critical | high | medium | low
+    description: "Why this rule exists"
+    tags: ["category"]
+```
+
+## Fields Reference
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | ✅ | Unique identifier (snake_case) |
+| `pattern` | ✅ | Regex pattern to match against input/output |
+| `action` | ✅ | What to do when matched: `DENY`, `ESCALATE`, or `LOG` |
+| `severity` | ✅ | Risk level: `critical`, `high`, `medium`, `low` |
+| `description` | ✅ | Human-readable explanation |
+| `tags` | ❌ | Categories for filtering and reporting |
+
+## Example: Financial Policy
+
+```yaml
+version: "1.0"
+domain: "financial"
+
+policies:
+  - name: large_transfer
+    pattern: '(?i)(transfer|send|wire|pix)\s+.*\$([\d,]+\.?\d*)'
+    action: ESCALATE
+    severity: critical
+    description: "Flag high-value financial transfers for human review"
+    tags: ["aml", "fraud"]
+
+  - name: offshore_transfer
+    pattern: '(?i)(offshore|cayman|panama|swiss.*bank|tax.*haven)'
+    action: DENY
+    severity: critical
+    description: "Block references to offshore financial activity"
+    tags: ["aml", "compliance"]
+```
+
+## Example: PII Protection (LGPD)
+
+```yaml
+version: "1.0"
+domain: "lgpd"
+
+policies:
+  - name: cpf_exposure
+    pattern: '\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'
+    action: DENY
+    severity: critical
+    description: "Block CPF numbers from being processed"
+    tags: ["pii", "lgpd"]
+
+  - name: email_in_output
+    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    action: LOG
+    severity: medium
+    description: "Log when email addresses appear in agent output"
+    tags: ["pii"]
+```
+
+## Built-in Policy Packs
+
+ABS Core ships with 3 policy packs ready to use:
+
+| Pack | Rules | Coverage |
+|------|-------|----------|
+| `financial.yml` | 7 | Fraud, AML, PII, crypto, offshore |
+| `healthcare.yml` | 5 | HIPAA, PHI, prescriptions, mental health |
+| `lgpd.yml` | 6 | Brazilian data protection (CPF, RG, minors) |
+
+## Loading Custom Policies
+
+Place your `.yml` files in the `contracts/policies/` directory:
+
+```
+contracts/
+  policies/
+    financial.yml     # Built-in
+    healthcare.yml    # Built-in
+    lgpd.yml          # Built-in
+    my-custom.yml     # Your custom policies
+```
+
+The WASM engine automatically loads all `.yml` files at startup.
+
+## Testing Policies
+
+Test your policies before deploying:
+
+```bash
+# Test a single input against all policies
+curl -X POST https://api.abscore.app/v1/events \
+  -H "Authorization: Bearer $ABS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "Transfer R$50000 to offshore account in Cayman Islands",
+    "model": "gpt-4o"
+  }'
+```
+
+Expected response:
+```json
+{
+  "verdict": "DENY",
+  "matched_policies": [
+    "financial.large_transfer",
+    "financial.offshore_transfer"
+  ],
+  "risk_score": 95,
+  "reasoning": "Multiple critical policies triggered"
+}
+```
+
+## Best Practices
+
+<Warning>
+  **Avoid overly broad patterns.** A pattern like `.*` will match everything and create alert fatigue.
+</Warning>
+
+1. **Start permissive, tighten gradually.** Use `LOG` first, then `ESCALATE`, then `DENY`.
+2. **Test with real data.** Run your policies against production-like inputs.
+3. **Use severity wisely.** Reserve `critical` for rules that must never be violated.
+4. **Tag everything.** Tags enable filtering in the dashboard and compliance reports.
+5. **Document the "why".** Every description should explain the business reason, not just the technical match.

@@ -1,0 +1,49 @@
+---
+title: Scanner CLI
+description: "CI/CD Integration & Local Scanning"
+---
+
+# Scanner CLI
+
+The **ABS Scanner** is a standalone CLI tool for scanning repositories and artifacts for policy violations. It is ideal for CI/CD pipelines (GitHub Actions, GitLab CI).
+
+## Installation
+
+```bash
+npm install -g @abs/scan
+```
+
+## Commands
+
+### `abs scan`
+
+Scans the current directory recursively.
+
+```bash
+$ abs scan .
+
+[+] Scanning 42 files...
+[!] Found 3 issues:
+    - src/config.ts: Hardcoded AWS Key (Line 12) [CRITICAL]
+    - db/seed.sql: PII (Email) in comments [LOW]
+```
+
+### `abs check`
+
+Checks a specific input string against policies (useful for git hooks).
+
+```bash
+$ abs check --input "rm -rf /"
+[BLOCK] Malicious command detected (Rule: sys-001)
+```
+
+## CI/CD Integration
+
+Add to your `.github/workflows/security.yml`:
+
+```yaml
+steps:
+  - uses: actions/checkout@v3
+  - run: npm install -g @abs/scan
+  - run: abs scan . --fail-on critical
+```

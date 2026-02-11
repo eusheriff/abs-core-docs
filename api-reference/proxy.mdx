@@ -1,0 +1,46 @@
+---
+title: Magic Proxy
+description: "/v1/proxy"
+---
+
+# Magic Proxy
+
+The **Magic Proxy** is an OpenAI-compatible endpoint that transparently adds ABS governance to any existing agent.
+
+## Usage
+
+Point your agent's `base_url` to the proxy.
+
+### Endpoint
+
+`https://api.abscore.app/v1/proxy`
+
+### Example (Python)
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.abscore.app/v1/proxy",
+    api_key="sk-..." # Your OpenAI Key (or ABS Token if using Secret Vault)
+)
+
+completion = client.chat.completions.create(
+  model="gpt-4",
+  messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+## Features supported
+
+- `/chat/completions`
+- `/embeddings`
+- `/models`
+
+## Governance
+
+All requests passing through the proxy are:
+
+1.  **Sanitized**: PII redaction on input/output.
+2.  **Audited**: Full request/response logged.
+3.  **Enforced**: Blocked if policy violation occurs (returns 403).

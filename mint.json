@@ -1,0 +1,76 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "ABS Core Documentation",
+  "logo": {
+    "dark": "/logo/logo.png",
+    "light": "/logo/logo.png"
+  },
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#F97316",
+    "light": "#FDBA74",
+    "dark": "#EA580C",
+    "anchors": {
+      "from": "#F97316",
+      "to": "#DC2626"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Dashboard",
+      "url": "https://abscore.app/dashboard"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "https://abscore.app/login"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "SDK",
+      "url": "sdk"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/eusheriff/abs-core"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://discord.gg/abscore"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart", "concepts"]
+    },
+    {
+      "group": "Core Features",
+      "pages": ["features/policy-engine", "features/secret-vault", "features/heartbeat", "features/chi"]
+    },
+    {
+      "group": "Policies",
+      "pages": ["policies/authoring", "policies/financial", "policies/healthcare", "policies/lgpd"]
+    },
+    {
+      "group": "API Reference",
+      "pages": ["api-reference/authentication", "api-reference/events", "api-reference/proxy", "api-reference/agents"]
+    },
+    {
+      "group": "SDK",
+      "pages": ["sdk/sentinel", "sdk/scanner", "sdk/vscode"]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/eusheriff/abs-core",
+    "x": "https://x.com/oconnector"
+  }
+}

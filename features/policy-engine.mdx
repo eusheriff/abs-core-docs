@@ -1,0 +1,70 @@
+---
+title: Policy Engine
+description: "Dynamic Governance & Rule Enforcement"
+---
+
+# Policy Engine
+
+The **ABS Policy Engine** is the core decision-making component of the ABS Kernel. It evaluates every agent action against a set of active policies to determine whether to `ALLOW`, `DENY`, or `ESCALATE` the operation.
+
+## Architecture
+
+The engine operates on a **Fail-Close** principle: if a policy cannot be evaluated or an error occurs, the default action is to block.
+
+### Decision Flow
+
+1.  **Event Ingestion**: The engine receives an `EventEnvelope` containing the agent's intent, payload, and metadata.
+2.  **Sanitization**: Input safeguards remove PII and check for prompt injection.
+3.  **Policy Evaluation**: The active policy for the event type is executed.
+4.  **Risk Scoring**: A risk score (0-100) is calculated based on:
+    - **Static Rules**: Regex matches, keyword blocks.
+    - **Contextual Analysis**: Velocity checks, anomaly detection.
+    - **Sequence Analysis**: Recognition of dangerous workflows.
+    - **Trust Score**: Historical reputation of the agent.
+5.  **Verdict**:
+    - **ALLOW**: Risk score < 30.
+    - **ESCALATE**: Risk score 30-79 (requires human approval).
+    - **DENY**: Risk score >= 80 or explicit block.
+6.  **Immutable Log**: The decision is signed and recorded in the Write-Ahead Log (WAL).
+
+## Policy Types
+
+### Static Policies (Scanner Mode)
+
+Designed for high-performance, local execution.
+
+- **Regex**: Detect PII (CPFs, Credit Cards, API Keys).
+- **Keyword**: Block "password", "secret", "groselha".
+- **Structure**: Validate JSON schemas and file types.
+
+### Dynamic Policies (Runtime Mode)
+
+Leverage state and LLM intelligence.
+
+- **Velocity**: "User X sent > 5 messages in 1 second."
+- **Anomaly**: "This code commit style differs from User Y's profile."
+- **Semantic**: "The user is trying to bypass authentication" (Intent detection).
+
+## Example Policy
+
+```typescript
+export const FINANCIAL_POLICY = {
+  name: "financial-safe-transfer",
+  description: "Enforces limits on financial transactions",
+  evaluate: (proposal, event) => {
+    const amount = event.payload.amount;
+
+    // Critical Risk
+    if (amount > 50000) {
+      return { decision: "DENY", reason: "Amount exceeds hard limit" };
+    }
+
+    // High Risk - Human Review
+    if (amount > 10000) {
+      return { decision: "ESCALATE", reason: "High value transfer" };
+    }
+
+    return "ALLOW";
+  },
+};
+```
